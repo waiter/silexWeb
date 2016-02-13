@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    {% include 'header.html'%}
+    <style>
+        #body {
+            padding: 0 30px 60px;
+        }
+        th {
+            text-align: center;
+        }
+        td {
+            word-break:break-all;
+            word-wrap:break-word;
+        }
+        .vbtn {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+{% include 'topBar.html'%}
+<div id="body">
+    <h1>云图管理页面</h1>
+    <button class="btn btn-primary btn-lg" style="margin-bottom: 10px;" onclick="addNew()">增加配置</button>
+<div class="panel panel-default">
+    <!-- Default panel contents -->
+    <div class="panel-heading">云图列表</div>
+    <table class="table table-striped table-hover table-bordered">
+        <thead>
+            <tr>
+                <th style="min-width: 60px;width: 60px;">#</th>
+                <th style="min-width: 60px;width: 60px;">优先级</th>
+                <th style="min-width: 100px;width: 100px;">图标</th>
+                <th style="min-width: 100px;">游戏名</th>
+                <th style="min-width: 60px;">渠道</th>
+                <th style="min-width: 60px;">类型</th>
+                <th style="min-width: 60px;">包名</th>
+                <th style="min-width: 60px;">介绍</th>
+                <th style="min-width: 100px;width: 100px;">各种地址</th>
+                <th style="min-width: 60px;width: 60px;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for key, item in list %}
+            <tr id="list-{{item.id}}">
+                <th style="vertical-align: middle;">{{key+1}}</th>
+                <th style="vertical-align: middle;" class="conPriority">{{item.priority}}</th>
+                <td style="vertical-align: middle;text-align: center;"><img style="width: 80px;" src="{{item.icon}}" alt="图标" class="img-rounded conIcon"></td>
+                <td style="vertical-align: middle;text-align: center;" class="conAppName">{{item.appName}}</td>
+                <td style="vertical-align: middle;" class="conChannel">{{item.channel}}</td>
+                <td style="vertical-align: middle;text-align: center;" class="conType">{{item.type}}</td>
+                <td style="vertical-align: middle;" class="conPackage">{{item.package}}</td>
+                <td style="vertical-align: middle;" class="conDesc">{{item.desc}}</td>
+                <td style="vertical-align: middle;text-align: center;">
+                {% if item.download|length > 0 %}
+                    [<a href="{{item.download}}" class="conDownload">下载地址</a>]
+                {% else %}
+                    [下载地址]
+                {% endif %}<br/>
+                {% if item.imageHorizontal|length > 0 %}
+                    [<a href="{{item.imageHorizontal}}" class="conImageHorizontal">横宣传图</a>]
+                {% else %}
+                    [横宣传图]
+                {% endif %}<br/>
+                {% if item.imageVertical|length > 0 %}
+                    [<a href="{{item.imageVertical}}" class="conImageVertical">竖宣传图</a>]
+                {% else %}
+                    [竖宣传图]
+                {% endif %}<br/>
+                </td>
+                <td style="text-align: center;vertical-align: middle;">
+                    <button class="btn btn-sm btn-success vbtn" onclick="editOld({{ item.id }})">编辑</button><br/>
+                    <button class="btn btn-sm btn-danger" onclick="onClickDelete( {{ item.id }} )">删除</button><br/>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+    <h2>黑名单</h2>
+    <div class="input-group vbtn" style="width: 250px;">
+        <input type="text" class="form-control" placeholder="输入包名添加" id="blackPackage">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button" onclick="onAddBlack()">添加</button>
+      </span>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">黑名单列表</div>
+        <table class="table table-striped table-hover table-bordered">
+            <thead>
+            <tr>
+                <th style="min-width: 60px;width: 60px;">#</th>
+                <th style="min-width: 60px;">包名</th>
+                <th style="min-width: 60px;width: 60px;">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for key, item in black %}
+            <tr>
+                <th style="vertical-align: middle;">{{key+1}}</th>
+                <td style="vertical-align: middle;" class="conPackage">{{item.package}}</td>
+                <td style="text-align: center;vertical-align: middle;">
+                    <button class="btn btn-sm btn-danger" onclick="onClickDeleteBlack( {{ item.id }} )">删除</button>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteDialog" tabindex="-1" role="dialog" aria-labelledby="deleteDialogLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="deleteDialogLabel">确认删除吗？</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" role="alert">删除后将不可恢复！！</div>
+                <form id="deleteForm">
+                    <input type="text" hidden="hidden" name="id" value="0"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" onclick="ajaxDelete()">确定删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editDialog" tabindex="-1" role="dialog" aria-labelledby="deleteDialogLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="editDialogLabel">新增配置</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" class="form-horizontal" enctype="multipart/form-data">
+                    <input type="text" hidden="hidden" name="id" value="0"/>
+                    <div class="form-group">
+                        <label for="editAppName" class="col-sm-2 control-label">游戏名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editAppName" name="appName">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPackage" class="col-sm-2 control-label">包名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editPackage" name="package">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editType" class="col-sm-2 control-label">类型</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editType" placeholder="策略" name="type">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editChannel" class="col-sm-2 control-label">渠道</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editChannel" placeholder="googleplay" name="channel">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPriority" class="col-sm-2 control-label">优先级</label>
+                        <div class="col-sm-10">
+                         <input type="text" class="form-control" id="editPriority" placeholder="int型，越大优先级越高" name="priority">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDesc" class="col-sm-2 control-label">描述</label>
+                        <div class="col-sm-10">
+                            <textarea rows="3" class="form-control" id="editDesc" placeholder="描述" name="desc"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDownload" class="col-sm-2 control-label">下载地址</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editDownload" placeholder="下载地址URL" name="download">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editIcon" class="col-sm-2 control-label">图标地址</label>
+                        <div class="col-sm-10">
+                            <input type="file" class="form-control" id="editIcon" name="icon">
+                            <p class="editIconP">不传为不更改</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editImageHorizontal" class="col-sm-2 control-label">横屏图</label>
+                        <div class="col-sm-10">
+                            <input type="file" class="form-control" id="editImageHorizontal" name="imageHorizontal">
+                            <p class="editImageHorizontalP">不传为不更改</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editImageVertical" class="col-sm-2 control-label">竖屏图</label>
+                        <div class="col-sm-10">
+                            <input type="file" class="form-control" id="editImageVertical" name="imageVertical">
+                            <p class="editImageVerticalP">不传为不更改</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="ajaxEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'footer.html'%}
+<script>
+    var isNetwork = false;
+    function onClickDelete(id) {
+        $('#deleteForm input[name=id]').val(id);
+        $('#deleteDialog').modal('show');
+    }
+    function ajaxDelete() {
+        if (isNetwork) {
+            alert("网络操作中...");
+            return;
+        }
+        isNetwork = true;
+        $.ajax({
+            type: 'POST',
+            url: '/index.php/cloud/atlas/delete',
+            data: $('#deleteForm').serialize(),
+            error: function() {
+                alert('网络错误');
+                isNetwork = false;
+            },
+            success: function(data) {
+                isNetwork = false;
+                if (data.state == 1) {
+                    window.location.reload();
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+    function addNew() {
+        $('#editDialogLabel').html('新增配置');
+        $('#editForm')[0].reset();
+        $('#editForm input[name=id]').val(0);
+        $('#editForm p.editIconP').html('');
+        $('#editForm p.editImageHorizontalP').html('');
+        $('#editForm p.editImageVerticalP').html('');
+        $('#editDialog').modal('show');
+    }
+    function editOld(id) {
+        var tr = $('#list-'+id);
+        $('#editDialogLabel').html('编辑配置');
+        $('#editForm input[name=id]').val(id);
+        $('#editForm input[name=appName]').val(tr.children('td.conAppName').html());
+        $('#editForm input[name=package]').val(tr.children('td.conPackage').html());
+        $('#editForm textarea[name=desc]').val(tr.children('td.conDesc').html());
+        $('#editForm input[name=channel]').val(tr.children('td.conChannel').html());
+        $('#editForm input[name=priority]').val(tr.children('th.conPriority').html());
+        $('#editForm input[name=download]').val(tr.children('td').children('a.conDownload').attr('href'));
+        $('#editForm input[name=type]').val(tr.children('td.conType').html());
+        $('#editForm p.editIconP').html('不传为不更改。当前为：'+tr.children('td').children('img.conIcon').attr('src'));
+        $('#editForm p.editImageHorizontalP').html('不传为不更改。当前为：'+tr.children('td').children('a.conImageHorizontal').attr('href'));
+        $('#editForm p.editImageVerticalP').html('不传为不更改。当前为：'+tr.children('td').children('a.conImageVertical').attr('href'));
+        $('#editDialog').modal('show');
+    }
+    function ajaxEdit() {
+        if (isNetwork) {
+            alert("网络操作中...");
+            return;
+        }
+        isNetwork = true;
+        $('#editForm').ajaxSubmit({
+            type: 'POST',
+            url: '/index.php/cloud/atlas/edit',
+            error: function() {
+                alert('网络错误');
+                isNetwork = false;
+            },
+            success: function(data) {
+                isNetwork = false;
+                if (data.state == 1) {
+                    window.location.reload();
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+    function onClickDeleteBlack(id) {
+        if (confirm('确定要从黑名单中删除该包名吗？')) {
+            if (isNetwork) {
+                alert("网络操作中...");
+                return;
+            }
+            isNetwork = true;
+            $.ajax({
+                type: 'delete',
+                url: '/index.php/cloud/black/delete/'+id,
+                error: function() {
+                    alert('网络错误');
+                    isNetwork = false;
+                },
+                success: function(data) {
+                    isNetwork = false;
+                    if (data.state == 1) {
+                        window.location.reload();
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+    }
+    function onAddBlack() {
+        if (isNetwork) {
+            alert("网络操作中...");
+            return;
+        }
+        isNetwork = true;
+        $.ajax({
+            type: 'post',
+            url: '/index.php/cloud/black/add',
+            data: {
+                package: $('#blackPackage').val()
+            },
+            error: function() {
+                alert('网络错误');
+                isNetwork = false;
+            },
+            success: function(data) {
+                isNetwork = false;
+                if (data.state == 1) {
+                    window.location.reload();
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

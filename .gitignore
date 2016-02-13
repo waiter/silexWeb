@@ -1,0 +1,5 @@
+cache/
+config/
+upload/
+.DS_Store
+.idea/

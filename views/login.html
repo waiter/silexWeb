@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    {% include 'header.html'%}
+    <title>门前雪瓦上霜</title>
+    <style>
+        body {
+            background: url(/static/images/bg.jpg) no-repeat top center fixed transparent;
+            background-size: cover;
+        }
+        div.login {
+            position:absolute;
+            top:50%;
+            left:50%;
+            margin:-150px 0 0 -200px;
+            width:400px;
+            height:300px;
+            z-index:99;
+            background: rgba(255,255,255,0.6);
+            padding: 10px 40px;
+            box-shadow: 0 4px 4px rgba(0,0,0,0.3);
+            border-radius: 3px;
+        }
+        div.title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="login">
+    <div class="title">
+        <h3>门前雪瓦上霜</h3>
+    </div>
+    <div style="padding: 0 15px; margin: 10px auto;">
+        <form class="form-horizontal" id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" class="form-control" id="username" placeholder="用户名" name="username">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" class="form-control" id="password" placeholder="密码" name="password">
+            </div>
+        </form>
+    </div>
+    <button  type="button" class="btn btn-primary btn-block" style="margin-top: 30px;" onclick="clickLogin()">登录</button>
+</div>
+<script>
+    function clickLogin() {
+        $.ajax({
+            url: '/index.php/login/in',
+            data: $('#loginForm').serialize(),
+            method: 'post',
+            success: function(data) {
+                if (data.state == 1) {
+                    window.location.href = '/index.php';
+                } else {
+                    alert('登录失败');
+                }
+            },
+            error: function() {
+                alert("网络错误");
+            }
+        });
+    }
+</script>
+</body>
+</html>

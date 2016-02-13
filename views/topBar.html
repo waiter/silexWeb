@@ -1,0 +1,38 @@
+{% set user = app.session.get('user') %}
+
+<nav class="navbar navbar-inverse navbar-static-top" style="padding-right: 20px;">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/index.php"><label>门</label></a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li><a href="/index.php/cloud">云图管理</a></li>
+        </ul>
+        <p class="navbar-text navbar-right">
+            {% if user%}
+            欢迎你，{{user.username}}
+            <a href="#" style="margin-left: 10px;" onclick="clickLogout()">登出</a>
+            {%else%}
+            未登录
+            {%endif%}
+        </p>
+    </div>
+</nav>
+<script>
+    function clickLogout() {
+        $.ajax({
+            url: '/index.php/login/out',
+            method: 'get',
+            success: function(data) {
+                if (data.state == 1) {
+                    window.location.reload();
+                } else {
+                    alert('登出失败');
+                }
+            },
+            error: function() {
+                alert("网络错误");
+            }
+        });
+    }
+</script>
