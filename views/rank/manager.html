@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    {% include 'header.html'%}
+    <style>
+        .gameTable th {
+            text-align: center;
+        }
+        .gameTable td {
+            word-break:break-all;
+            word-wrap:break-word;
+        }
+    </style>
+</head>
+<body>
+{% include 'topBar.html'%}
+<div id="container">
+    <h1>排行榜管理页面</h1>
+    <button class="btn btn-primary btn-lg" style="margin-bottom: 10px;" onclick="addNewGame()">增加游戏</button>
+    <div class="panel panel-default">
+        <div class="panel-heading">游戏列表</div>
+        <table class="table table-striped table-hover table-bordered gameTable">
+            <thead>
+            <tr>
+                <th style="min-width: 60px;width: 60px;">#</th>
+                <th style="min-width: 100px;">游戏名</th>
+                <th style="min-width: 60px;">包名</th>
+                <th style="min-width: 60px;">介绍</th>
+                <th style="min-width: 180px;width: 180px;">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in games %}
+            <tr id="game-list-{{item.id}}">
+                <th style="vertical-align: middle;">{{loop.index}}</th>
+                <td style="vertical-align: middle;text-align: center;" class="conAppName">{{item.appName}}</td>
+                <td style="vertical-align: middle;" class="conPackage">{{item.package}}</td>
+                <td style="vertical-align: middle;" class="conDesc">{{item.desc}}</td>
+                <td style="text-align: center;vertical-align: middle;">
+                    <a class="btn btn-sm btn-info" href="/index.php/rank/{{item.id}}">排行榜</a>
+                    <button class="btn btn-sm btn-success" onclick="editGame({{ item.id }})">编辑</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteGame( {{ item.id }} )">删除</button>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="editGameDialog" tabindex="-1" role="dialog" aria-labelledby="editGameDialogLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="editGameDialogLabel">新增游戏</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editGameForm" class="form-horizontal" enctype="multipart/form-data">
+                    <input type="text" hidden="hidden" name="id" value="0"/>
+                    <div class="form-group">
+                        <label for="editAppName" class="col-sm-2 control-label">游戏名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editAppName" name="appName">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPackage" class="col-sm-2 control-label">包名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editPackage" name="package">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDesc" class="col-sm-2 control-label">描述</label>
+                        <div class="col-sm-10">
+                            <textarea rows="3" class="form-control" id="editDesc" placeholder="描述" name="desc"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="ajaxEditGame()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'footer.html'%}
+<script>
+    var isNetwork = false;
+    function addNewGame() {
+        $('#editGameDialogLabel').html('新增游戏');
+        $('#editGameForm')[0].reset();
+        $('#editGameForm input[name=id]').val(0);
+        $('#editGameDialog').modal('show');
+    }
+    function editGame(id) {
+        var tr = $('#game-list-'+id);
+        $('#editGameDialogLabel').html('编辑游戏');
+        $('#editGameForm input[name=id]').val(id);
+        $('#editGameForm input[name=appName]').val(tr.children('td.conAppName').html());
+        $('#editGameForm input[name=package]').val(tr.children('td.conPackage').html());
+        $('#editGameForm textarea[name=desc]').val(tr.children('td.conDesc').html());
+        $('#editGameDialog').modal('show');
+    }
+    function ajaxEditGame() {
+        if (isNetwork) {
+            alert("网络操作中...");
+            return;
+        }
+        isNetwork = true;
+        $.ajax({
+            type: 'POST',
+            url: '/index.php/rank/game/edit',
+            data: $('#editGameForm').serialize(),
+            error: function() {
+                alert('网络错误');
+                isNetwork = false;
+            },
+            success: function(data) {
+                isNetwork = false;
+                if (data.state == 1) {
+                    window.location.reload();
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+    function deleteGame(id) {
+        if(confirm('该操作将删除该游戏下全部排行榜以及用户数据！！且无法恢复！！确定要删除吗？')) {
+            if (isNetwork) {
+                alert("网络操作中...");
+                return;
+            }
+            isNetwork = true;
+            $.ajax({
+                url: '/index.php/rank/game/delete',
+                method: 'delete',
+                data: {id: id},
+                error: function() {
+                    alert('网络错误');
+                    isNetwork = false;
+                },
+                success: function(data) {
+                    isNetwork = false;
+                    if (data.state == 1) {
+                        window.location.reload();
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>

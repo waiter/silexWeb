@@ -11,20 +11,24 @@
  Target Server Version : 50709
  File Encoding         : utf-8
 
- Date: 02/12/2016 18:44:09 PM
+ Date: 02/18/2016 00:23:06 AM
 */
 
 SET NAMES utf8;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
---  Table structure for `CloudBlack`
+--  Table structure for `RankGame`
 -- ----------------------------
-DROP TABLE IF EXISTS `CloudBlack`;
-CREATE TABLE `CloudBlack` (
+DROP TABLE IF EXISTS `RankGame`;
+CREATE TABLE `RankGame` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `package` varchar(200) NOT NULL,
+  `appName` varchar(100) NOT NULL,
+  `desc` varchar(1000) NOT NULL,
+  `updated` int(11) NOT NULL,
+  `created` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 SET FOREIGN_KEY_CHECKS = 1;

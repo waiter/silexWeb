@@ -3,6 +3,7 @@
 require_once __DIR__.'/vendor/autoload.php';
 require_once __DIR__.'/constant/Constant.php';
 require_once __DIR__.'/logic/FileCacheProvider.php';
+require_once __DIR__.'/logic/ApiResponseProvider.php';
 
 use Symfony\Component\HttpFoundation\Request;
 
@@ -31,8 +32,6 @@ $checkLoginApi = function () use($app) {
     }
 };
 
-$app['debug'] = true;
-
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => include 'config/config.php'
 ));
@@ -47,12 +46,12 @@ $app->register(new FileCacheProvider(), array(
 
 $app->register(new \Silex\Provider\SessionServiceProvider());
 
-$app->get('/hello/{name}', function ($name) {
-    return "Hello $name!";
-});
+$app->register(new ApiResponseProvider());
 
 $app->mount('/cloud', include 'routers/cloud.php');
 $app->mount('/login', include 'routers/login.php');
+$app->mount('/rank', include 'routers/rank.php');
+$app->mount('/c', include 'routers/c.php');
 
 $app->get('/', function (Request $request) use($app){
     preg_match('/upload\/.*/','http://localhost:8084/upload/cloud/icon_1454773492.png', $res);

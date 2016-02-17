@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     {% include 'header.html'%}
     <style>
-        #body {
-            padding: 0 30px 60px;
-        }
         th {
             text-align: center;
         }
@@ -21,7 +18,7 @@
 </head>
 <body>
 {% include 'topBar.html'%}
-<div id="body">
+<div id="container">
     <h1>云图管理页面</h1>
     <button class="btn btn-primary btn-lg" style="margin-bottom: 10px;" onclick="addNew()">增加配置</button>
 <div class="panel panel-default">
@@ -132,7 +129,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="editDialog" tabindex="-1" role="dialog" aria-labelledby="deleteDialogLabel">
+<div class="modal fade" id="editDialog" tabindex="-1" role="dialog" aria-labelledby="editDialogLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">

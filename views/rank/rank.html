@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    {% include 'header.html'%}
+    <link href="/static/css/jquery.dataTables.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="/static/js/jquery.dataTables.min.js"></script>
+    <style>
+        .smInput {
+            width: 100px;
+            display: inline;
+        }
+        #rank th {
+            text-align: center;
+        }
+        #rank td {
+            word-break:break-all;
+            word-wrap:break-word;
+        }
+    </style>
+</head>
+<body>
+{% include 'topBar.html'%}
+<div id="container">
+    <h1>{{game.appName}}的排行榜列表</h1>
+    <button class="btn btn-primary btn-lg" style="margin-bottom: 10px;" onclick="addNewRank()">增加排行榜</button>
+    <table id="rank">
+        <thead>
+            <tr>
+                <th style="min-width: 60px;width: 60px;">#</th>
+                <th style="min-width: 150px;width: 150px;">key</th>
+                <th style="min-width: 100px;">榜名</th>
+                <th style="min-width: 50px;">介绍</th>
+                <th style="min-width: 60px;width: 60px;">类型</th>
+                <th style="min-width: 50px;width: 50px;">排序</th>
+                <th style="min-width: 50px;width: 50px;">长度</th>
+                <th style="min-width: 60px;">值范围</th>
+                <th style="min-width: 50px;">用户</th>
+                <th style="min-width: 50px;">校验值</th>
+                <th style="min-width: 170px;width: 170px;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+        {%set rankType = ['全排行', '日排行', '周排行', '月排行']%}
+        {%for item in list%}
+            <tr>
+                <th style="vertical-align: middle;">{{loop.index}}</th>
+                <th style="vertical-align: middle;">{{item.key}}</th>
+                <td>{{item.name}}</td>
+                <td>{{item.desc}}</td>
+                <td style="vertical-align: middle; text-align: center;">{{rankType[item.type]}}</td>
+                <td style="vertical-align: middle; text-align: center;">{%if item.order == 1%}正序{%else%}逆序{%endif%}</td>
+                <td style="vertical-align: middle; text-align: center;">{{item.length}}</td>
+                <td style="vertical-align: middle; text-align: center;">{%if item.min >= 0%}{{item.min}}{%endif%}—{%if item.max >= 0%}{{item.max}}{%endif%}</td>
+                <td style="vertical-align: middle; text-align: center;">{%if item.unique == 1%}唯一{%else%}重复{%endif%}</td>
+                <td style="vertical-align: middle; text-align: center;">{{item.check}}</td>
+                <td style="vertical-align: middle; text-align: center;">
+                    <button class="btn btn-sm btn-info" onclick="showRank('{{item.key}}')">当期排行</button>
+                    <button class="btn btn-sm btn-success" onclick="editRank('{{ item.key }}')">编辑</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteRank( '{{ item.key }}' )">删除</button>
+                </td>
+            </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+</div>
+<div class="modal fade" id="editDialog" tabindex="-1" role="dialog" aria-labelledby="editDialogLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="editDialogLabel">新增排行榜</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" class="form-horizontal" enctype="multipart/form-data">
+                    <input type="text" hidden="hidden" name="id" value="0"/>
+                    <input type="text" hidden="hidden" name="gameId" value="{{game.id}}"/>
+                    <input type="text" hidden="hidden" name="key" value=""/>
+                    <div class="form-group">
+                        <label for="editName" class="col-sm-2 control-label">排行榜名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editName" name="name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDesc" class="col-sm-2 control-label">描述</label>
+                        <div class="col-sm-10">
+                            <textarea rows="3" class="form-control" id="editDesc" placeholder="描述" name="desc"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">类型</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" name="type" value="0" checked="checked"> 全排行
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="type" value="1"> 日排行
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="type" value="2"> 周排行
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="type" value="3"> 月排行
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">排序</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" name="order" value="1"> 正序
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="order" value="0" checked="checked"> 逆序
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editLength" class="col-sm-2 control-label">长度</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" id="editLength" name="length" value="100">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">值范围</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control smInput" id="editMin" name="min" value="0"> —
+                            <input type="number" class="form-control smInput" id="editMax" name="max" value="-1">
+                            <p class="help-block">小于0表示不受限</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">用户唯一</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" name="unique" value="1" checked="checked"> 唯一
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="unique" value="0"> 不唯一
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPre" class="col-sm-2 control-label">特殊前缀</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editPre" name="pre" value="XX">
+                            <p class="help-block">英文前缀，必填，用于生成排行榜唯一key，如TB</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">批量序列</label>
+                        <div class="col-sm-10">
+                            <label id="rankKeyPre">D_1_TB_</label>
+                            <input type="number" class="form-control smInput" id="editNumMin" name="numMin" value="1000"> —
+                            <input type="number" class="form-control smInput" id="editNumMax" name="numMax" value="-1">
+                            <p class="help-block">用于批量生成排行榜key，前半部分会自动生成，后半部数字可以填最小值，最大值来批量生成。最大值为小于0时只生成单个。不要批量超过100个</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCheck" class="col-sm-2 control-label">校验参数</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" id="editCheck" name="check" value="200">
+                            <p class="help-block">上传是需要上传校验值，规则为 abs( (int)( a*sin(x) + x/a ) )</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="ajaxEditRank()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'footer.html'%}
+<script>
+    var isNetwork = false;
+    var tk = {
+        0: 'A',
+        1: 'D',
+        2: 'W',
+        3: 'M'
+    }
+    function resetRankKeyPre() {
+        var t = $('#editForm input[name=type]:checked').val();
+        var type = tk[t] || tk[0];
+        $('#rankKeyPre').html(type+'_{{game.id}}_'+$('#editForm input[name=pre]').val()+'_');
+    }
+    function setDisable(disable) {
+        $('#editForm input[name=type]').attr('disabled', disable);
+        $('#editForm input[name=pre]').attr('disabled', disable);
+        $('#editForm input[name=order]').attr('disabled', disable);
+        $('#editForm input[name=unique]').attr('disabled', disable);
+        $('#editForm input[name=check]').attr('disabled', disable);
+        $('#editForm input[name=numMin]').attr('disabled', disable);
+        $('#editForm input[name=numMax]').attr('disabled', disable);
+    }
+    function addNewRank() {
+        $('#editDialogLabel').html('新增排行榜');
+        $('#editForm')[0].reset();
+        $('#editForm input[name=id]').val(0);
+        $('#editForm input[name=key]').val('');
+        setDisable(false);
+        resetRankKeyPre();
+        $('#editDialog').modal('show');
+    }
+    function showEditDialog(data) {
+        $('#editDialogLabel').html('编辑排行榜');
+        $('#editForm')[0].reset();
+        $('#editForm input[name=id]').val(data.id);
+        $('#editForm input[name=name]').val(data.name);
+        $('#editForm textarea[name=desc]').val(data.desc);
+        $('#editForm input[name=key]').val(data.key);
+        $('#editForm input[name=type]').val(data.type);
+        $('#editForm input[name=pre]').val(data.pre);
+        $('#editForm input[name=order]').val(data.order);
+        $('#editForm input[name=unique]').val(data.unique);
+        $('#editForm input[name=check]').val(data.check);
+        $('#editForm input[name=numMin]').val(data.num);
+        $('#editForm input[name=length]').val(data.length);
+        $('#editForm input[name=min]').val(data.min);
+        $('#editForm input[name=max]').val(data.max);
+        setDisable(true);
+        resetRankKeyPre();
+        $('#editDialog').modal('show');
+    }
+    function ajaxEditRank() {
+        if (isNetwork) {
+            alert("网络操作中...");
+            return;
+        }
+        isNetwork = true;
+        $.ajax({
+            type: 'POST',
+            url: '/index.php/rank/list/edit',
+            data: $('#editForm').serialize(),
+            error: function() {
+                alert('网络错误');
+                isNetwork = false;
+            },
+            success: function(data) {
+                isNetwork = false;
+                if (data.state == 1) {
+                    window.location.reload();
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+    function editRank(key) {
+        if (isNetwork) {
+            alert("网络操作中...");
+            return;
+        }
+        isNetwork = true;
+        $.ajax({
+            type: 'get',
+            url: '/index.php/rank/list/info/'+key,
+            error: function() {
+                alert('网络错误');
+                isNetwork = false;
+            },
+            success: function(data) {
+                isNetwork = false;
+                if (data.state == 1) {
+                    showEditDialog(data.msg);
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+    function deleteRank(key) {
+        if (confirm('确认要删除吗？该操作会删除所有该排行榜的用户数据，且无法恢复！！')) {
+            if (isNetwork) {
+                alert("网络操作中...");
+                return;
+            }
+            isNetwork = true;
+            $.ajax({
+                type: 'delete',
+                url: '/index.php/rank/list/delete',
+                data: {key: key, gameId: '{{game.id}}'},
+                error: function() {
+                    alert('网络错误');
+                    isNetwork = false;
+                },
+                success: function(data) {
+                    isNetwork = false;
+                    if (data.state == 1) {
+                        window.location.reload();
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+    }
+    $(document).ready(function(){
+        $('#rank').DataTable();
+        $('#editForm input[name=type]').change(resetRankKeyPre);
+        $('#editForm input[name=pre]').keyup(resetRankKeyPre);
+    });
+</script>
+</body>
+</html>

@@ -12,14 +12,14 @@ function pushCache($cache, $id) {
     if (!$arr) {
         $arr = array();
     }
-    array_push($arr, $id);
+    $arr[$id] = 1;
     $cache->save(Constant::CACHE_CLOUD_ATLAS_ALL, $arr);
 }
 
 function deleteAll($cache) {
     $arr = $cache->get(Constant::CACHE_CLOUD_ATLAS_ALL);
     if ($arr) {
-        foreach($arr as $key) {
+        foreach($arr as $key => $v) {
             $cache->delete($key);
         }
         $cache->delete(Constant::CACHE_CLOUD_ATLAS_ALL);

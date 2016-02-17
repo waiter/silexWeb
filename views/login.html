@@ -8,6 +8,7 @@
         body {
             background: url(/static/images/bg.jpg) no-repeat top center fixed transparent;
             background-size: cover;
+            min-height: 400px;
         }
         div.login {
             position:absolute;
@@ -25,6 +26,15 @@
         div.title {
             text-align: center;
             margin-bottom: 20px;
+        }
+        div.footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
         }
     </style>
 </head>
@@ -46,6 +56,9 @@
         </form>
     </div>
     <button  type="button" class="btn btn-primary btn-block" style="margin-top: 30px;" onclick="clickLogin()">登录</button>
+</div>
+<div class="footer">
+    备案/许可证编号: <a href="http://www.miitbeian.gov.cn/">浙ICP备16003993号</a>
 </div>
 <script>
     function clickLogin() {
