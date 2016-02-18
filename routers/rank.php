@@ -77,13 +77,16 @@ function getPhase($data) {
 
 $rank = $app['controllers_factory'];
 
-$rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($app) {
+$rank->get('/data/{key}/{phase}', function( $key, $phase) use($app) {
     $msg = '错误';
     try {
         $phase = (int)$phase;
         $info = getListInfoByKey($app, $key);
         $rank = $info['info'];
-        $tmpPhase = getPhase($info['info']);
+        if (!$rank) {
+            throw new Exception('未找到该排行榜');
+        }
+        $tmpPhase = getPhase($rank);
         if ($phase < 1 || $phase > $tmpPhase) {
             $phase = $tmpPhase;
         }
@@ -97,7 +100,7 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
             if ($rank['max'] >= $rank['min']) {
                 $sql .= ' and score <= '.$rank['max'];
             }
-            $sql .= ' order by score '.($rank['order'] == 1 ? 'asc' : 'desc');
+            $sql .= ' order by score '.($rank['order'] == 1 ? 'asc' : 'desc').', created asc';
             $sql .= ' limit '.$rank['length'];
             $datas = $app['db']->fetchAll($sql);
 
@@ -117,8 +120,82 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
     return $app['ARes'](0, $msg);
 })->value('phase', 0);
 
-$rank->get('/data/upload/{key}', function(Request $request, $key) use($app) {
+$rank->get('/upload/{key}', function(Request $request, $key) use($app) {
+    $msg = '错误';
+    try {
+        $info = getListInfoByKey($app, $key);
+        $rank = $info['info'];
+        if (!$rank) {
+            throw new Exception('未找到该排行榜');
+        }
+        $score = (int)$request->get('score');
+        $name = $request->get('name');
+        $uuid = $request->get('uuid');
+        $check = (int)$request->get('c');
+        if (!$uuid || empty($uuid)) {
+            throw new Exception('必须上传用户唯一id');
+        }
+        if (($rank['min'] >= 0 && $score < $rank['min']) || ($rank['max'] >= 0 && $rank['max'] >= $rank['min'] && $score > $rank['max']) ) {
+            throw new Exception('不是合法的分数');
+        }
+        if ($check != abs((int)($rank['check'] * sin($score) + $score / $rank['check']))) {
+            throw new Exception('数据不合法');
+        }
+        $phase = getPhase($rank);
+        $time = time();
+        $isInsert = false;
+        $needCheck = true;
+        if ($rank['unique'] == 1) {
+            $users = $app['db']->fetchAll('select id,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase and uuid = '$uuid' limit 1");
+            if ($users && count($users) > 0) {
+                $tempD = $users[0];
+                if ( ($rank['order'] == 1 && $score < $tempD['score']) || ($rank['order'] == 0 && $score > $tempD['score'])) {
+                    $ua = array(
+                        'score' => $score,
+                        'updated' => $time,
+                    );
+                    if ($name && !empty($name)) {
+                        $ua['name'] = $name;
+                    }
+                    $app['db']->update(Constant::DB_RANK_DATA, $ua, array('id' => $tempD['id']));
+                } else {
+                    $needCheck = false;
+                }
+            } else {
+                $isInsert = true;
+            }
+        } else {
+            $isInsert = true;
+        }
+        if ($isInsert) {
+            $rn = ($name && !empty($name)) ? $name : 'NoName';
+            $app['db']->insert(Constant::DB_RANK_DATA, array(
+                '`key`' => $key,
+                'phase' => $phase,
+                'name' => $rn,
+                'uuid' => $uuid,
+                'score' => $score,
+                'updated' => $time,
+                'created' => $time
+            ));
+        }
+        if ($needCheck) {
+            $dataKey = Constant::CACHE_RANK_DATA_PRE.$key.'_'.$phase;
+            $cd = $app['cache']->get($dataKey);
+            if ($cd) {
+                $count = count($cd);
+                if ($count < $rank['length'] || ($rank['order'] == 1 && $score < $cd[$count-1]['score']) || ($rank['order'] == 0 && $score > $cd[$count-1]['score'])) {
+                    $app['cache']->delete($dataKey);
+                }
+            }
+        }
 
+
+        return $app['ARes'](1, '上传成功');
+    } catch (Exception $e) {
+        $msg = $e->getMessage();
+    }
+    return $app['ARes'](0, $msg);
 });
 
 $rank->delete('/game/delete', function(Request $request) use($app) {
@@ -126,6 +203,17 @@ $rank->delete('/game/delete', function(Request $request) use($app) {
     try {
         $id = $request->get('id');
         $app['db']->delete(Constant::DB_RANK_GAME, array('id' => $id));
+        $lists = getRankList($app, $id);
+        if ($lists && count($lists) > 0 ){
+            $sql = 'delete from '.Constant::DB_RANK_DATA." where `key` in ('{$lists[0]['key']}'";
+            foreach($lists as $list) {
+                $sql .= ",'{$list['key']}'";
+                deleteListCache($app, $list['key']);
+            }
+            $sql .= ')';
+            $app['db']->delete(Constant::DB_RANK_LIST, array('gameId' => $id));
+            $app['db']->query($sql);
+        }
         $app['cache']->delete(Constant::CACHE_RANK_GAME_ALL);
         return $app['ARes'](1, '删除成功');
     } catch (Exception $e) {
@@ -192,6 +280,9 @@ $rank->post('/list/edit', function(Request $request) use($app) {
             $app['db']->update(Constant::DB_RANK_LIST, $array, array('id' => $id));
         } else {
             $check = (int)$request->get('check');
+            if ($check < 1) {
+                throw new Exception('校验值必须大于0');
+            }
             $pre = $request->get('pre');
             $type = (int)$request->get('type');
             if ($type < 0 || $type > 3) {
@@ -234,6 +325,7 @@ $rank->delete('/list/delete', function(Request $request) use($app) {
         $key = $request->get('key');
         $gameId = $request->get('gameId');
         $app['db']->delete(Constant::DB_RANK_LIST, array('`key`' => $key));
+        $app['db']->delete(Constant::DB_RANK_DATA, array('`key`' => $key));
         $app['cache']->delete(Constant::CACHE_RANK_LIST_ALL_PRE.$gameId);
         deleteListCache($app, $key);
         return $app['ARes'](1, '删除成功');

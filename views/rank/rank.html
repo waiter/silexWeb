@@ -10,10 +10,10 @@
             width: 100px;
             display: inline;
         }
-        #rank th {
+        th {
             text-align: center;
         }
-        #rank td {
+        td {
             word-break:break-all;
             word-wrap:break-word;
         }
@@ -174,6 +174,32 @@
     </div>
 </div>
 
+<div class="modal fade" id="dataDialog" tabindex="-1" role="dialog" aria-labelledby="dataDialogLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="dataDialogLabel">第1期</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 60px;width: 60px;">排名</th>
+                            <th>玩家名</th>
+                            <th>uuid</th>
+                            <th>分数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataBody">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% include 'footer.html'%}
 <script>
     var isNetwork = false;
@@ -298,6 +324,40 @@
                 }
             });
         }
+    }
+    function showRank(key) {
+        if (isNetwork) {
+            alert("网络操作中...");
+            return;
+        }
+        isNetwork = true;
+        $.ajax({
+            type: 'get',
+            url: '/index.php/rank/data/'+key,
+            error: function() {
+                alert('网络错误');
+                isNetwork = false;
+            },
+            success: function(data) {
+                isNetwork = false;
+                if (data.state == 1) {
+                    showRankDialog(data.msg);
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+    function showRankDialog(data) {
+        $('#dataDialogLabel').html(data.info.name + '第' + data.phase + '期排行榜');
+        var count = data.data.length;
+        var body = $('#dataBody');
+        body.empty();
+        for (var i = 0 ; i < count; i++) {
+            var temp = data.data[i];
+            body.append($("<tr><th>"+(i + 1)+"</th><td>"+temp.name+"</td><td>"+temp.uuid+"</td><td style=\"vertical-align: middle; text-align: center;\">"+temp.score+"</td></tr>"));
+        }
+        $('#dataDialog').modal('show');
     }
     $(document).ready(function(){
         $('#rank').DataTable();
