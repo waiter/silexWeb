@@ -3,3 +3,4 @@ config/
 upload/
 .DS_Store
 .idea/
+!views/config/

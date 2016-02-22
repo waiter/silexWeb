@@ -1,0 +1,15 @@
+<h1>接口说明</h1>
+<h2>获取配置</h2>
+请求：<code>http://www.waitergame.top/index.php/config/{package}</code><br/>
+说明：package为包名，必填<br/>
+例子：http://www.waitergame.top/index.php/config/com.xx.xx<br/>
+返回:
+<pre class="pre-scrollable">
+{
+  state: 1, // 获取状态，成功为1，msg中是数据，其他情况皆为失败，msg是错误信息
+  msg: { // 配置的key-value
+    banner: "gg",
+    people: "none"
+  }
+}
+</pre>

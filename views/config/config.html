@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    {% include 'header.html'%}
+    <link href="/static/css/jquery.dataTables.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="/static/js/jquery.dataTables.min.js"></script>
+    <style>
+        th {
+            text-align: center;
+        }
+        td {
+            word-break:break-all;
+            word-wrap:break-word;
+        }
+    </style>
+</head>
+<body>
+{% include 'topBar.html'%}
+<div id="container">
+    <h1>{{game.appName}}的配置列表</h1>
+    <button class="btn btn-primary btn-lg" style="margin-bottom: 10px;" onclick="addNewConfig()">增加配置</button>
+    <table id="config">
+        <thead>
+            <tr>
+                <th style="min-width: 60px;width: 60px;">#</th>
+                <th style="min-width: 150px;width: 150px;">参数名</th>
+                <th style="min-width: 150px;">参数值</th>
+                <th style="min-width: 100px;">备注</th>
+                <th style="min-width: 170px;width: 170px;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+        {%for item in list%}
+            <tr id="config-list-{{item.id}}">
+                <th style="vertical-align: middle;">{{loop.index}}</th>
+                <th style="vertical-align: middle;text-align: center" class="conKey">{{item.key}}</th>
+                <td class="conValue">{{item.value}}</td>
+                <td class="conDesc">{{item.desc}}</td>
+                <td style="vertical-align: middle; text-align: center;">
+                    <button class="btn btn-sm btn-success" onclick="editConfig('{{ item.id }}')">编辑</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteConfig( '{{ item.id }}' )">删除</button>
+                </td>
+            </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+</div>
+<div class="modal fade" id="editDialog" tabindex="-1" role="dialog" aria-labelledby="editDialogLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="editDialogLabel">新增配置</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" class="form-horizontal" enctype="multipart/form-data">
+                    <input type="text" hidden="hidden" name="id" value="0"/>
+                    <input type="text" hidden="hidden" name="package" value="{{game.package}}"/>
+                    <div class="form-group">
+                        <label for="editKey" class="col-sm-2 control-label">参数名*</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editKey" name="key">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editValue" class="col-sm-2 control-label">参数值</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editValue" name="value">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDesc" class="col-sm-2 control-label">备注</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editDesc" name="desc">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="ajaxEditConfig()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'footer.html'%}
+<script>
+    var isNetwork = false;
+    function addNewConfig() {
+        $('#editDialogLabel').html('新增配置');
+        $('#editForm')[0].reset();
+        $('#editForm input[name=id]').val(0);
+        $('#editForm input[name=key]').attr('disabled', false);
+        $('#editDialog').modal('show');
+    }
+    function editConfig(id) {
+        var tr = $('#config-list-'+id);
+        $('#editDialogLabel').html('编辑配置');
+        $('#editForm')[0].reset();
+        $('#editForm input[name=id]').val(id);
+        $('#editForm input[name=key]').val(tr.children('th.conKey').html());
+        $('#editForm input[name=value]').val(tr.children('td.conValue').html());
+        $('#editForm input[name=desc]').val(tr.children('td.conDesc').html());
+        $('#editForm input[name=key]').attr('disabled', true);
+        $('#editDialog').modal('show');
+    }
+    function ajaxEditConfig() {
+        if (isNetwork) {
+            alert("网络操作中...");
+            return;
+        }
+        isNetwork = true;
+        $.ajax({
+            type: 'POST',
+            url: '/index.php/config/data/edit',
+            data: $('#editForm').serialize(),
+            error: function() {
+                alert('网络错误');
+                isNetwork = false;
+            },
+            success: function(data) {
+                isNetwork = false;
+                if (data.state == 1) {
+                    window.location.reload();
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+    function deleteConfig(id) {
+        if (confirm('确认要删除吗？删除后无法恢复！！')) {
+            if (isNetwork) {
+                alert("网络操作中...");
+                return;
+            }
+            isNetwork = true;
+            $.ajax({
+                type: 'delete',
+                url: '/index.php/config/data/delete',
+                data: {id: id, package: '{{game.package}}'},
+                error: function() {
+                    alert('网络错误');
+                    isNetwork = false;
+                },
+                success: function(data) {
+                    isNetwork = false;
+                    if (data.state == 1) {
+                        window.location.reload();
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+    }
+
+    $(document).ready(function(){
+        $('#config').DataTable();
+    });
+</script>
+</body>
+</html>

@@ -26,10 +26,7 @@ $checkLogin = function () use($app) {
 $checkLoginApi = function () use($app) {
     $user = $app['session']->get('user');
     if (!$user) {
-        return $app->json(array(
-            'state' => 0,
-            'msg' => '需要登录'
-        ));
+        return $app['ARes'](0, '需要登录');
     }
 };
 
