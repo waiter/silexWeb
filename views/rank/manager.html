@@ -47,59 +47,7 @@
             </tbody>
         </table>
     </div>
-    <h1>接口说明</h1>
-    <h2>获取排行榜信息</h2>
-    请求：<code>http://www.waitergame.top/index.php/rank/data/{key}/{phase}</code><br/>
-    说明：key为排行榜key，必填，phase为第几期，可不填<br/>
-    例子：http://www.waitergame.top/index.php/rank/data/D_8_XX_1000<br/>
-    返回:
-    <pre class="pre-scrollable">
-{
-  state: 1, // 获取状态，成功为1，msg中是数据，其他情况皆为失败，msg是错误信息
-  msg: {
-    info: { // 排行榜基本信息
-      id: "4",
-      gameId: "8",
-      name: "dddfgg",
-      desc: "dad",
-      key: "D_8_XX_1000",   // 排行榜唯一key
-      type: "1",
-      order: "0",
-      length: "100",
-      min: "0",
-      max: "-1",
-      unique: "1",
-      pre: "XX",
-      num: "1000",
-      check: "200",         // 排行榜上传校验值
-      updated: "1455717053",
-      created: "1455717053"
-    },
-    phase: 2, // 排行榜第几期
-    data: [{  // 排行榜具体内容
-      name: "dahu",
-      uuid: "1xsda",
-      score: "300"
-    }, {
-      name: "dahu",
-      uuid: "2xsda",
-      score: "300"
-    }]
-  }
-}
-    </pre>
-    <h2>上传分数</h2>
-    请求：<code>http://www.waitergame.top/index.php/rank/upload/{key}?uuid={uuid}&name={name}&score={score}&c={check}</code><br/>
-    说明：key为排行榜key，必填；uuid为用户唯一id，必填；name为玩家名，选填；score为分数，必填；check为校验值，必填<br/>
-    校验值计算：<code>abs((int)(a*sin(x) + x/a))</code>，a为排行榜check值，x为分数<br/>
-    例子：http://www.waitergame.top/index.php/rank/data/D_8_XX_1000<br/>
-    返回:
-    <pre class="pre-scrollable">
-{
-  state: 1, // 获取状态，成功为1，其他情况皆为失败，msg是错误信息
-  msg: "上传成功"
-}
-    </pre>
+    {%include 'rank/api.html'%}
 </div>
 
 <div class="modal fade" id="editGameDialog" tabindex="-1" role="dialog" aria-labelledby="editGameDialogLabel">

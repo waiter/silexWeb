@@ -6,6 +6,7 @@ require_once __DIR__.'/logic/FileCacheProvider.php';
 require_once __DIR__.'/logic/ApiResponseProvider.php';
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 $root = __DIR__;
 
@@ -52,13 +53,26 @@ $app->mount('/cloud', include 'routers/cloud.php');
 $app->mount('/login', include 'routers/login.php');
 $app->mount('/rank', include 'routers/rank.php');
 $app->mount('/c', include 'routers/c.php');
+$app->mount('/config', include 'routers/config.php');
 
 $app->get('/', function (Request $request) use($app){
     preg_match('/upload\/.*/','http://localhost:8084/upload/cloud/icon_1454773492.png', $res);
     return $app['twig']->render('home.html', array(
         'names' => array('big', 'small', $request->getSchemeAndHttpHost()),$res[0]
     ));
-//    return '网站建设中...';
 })->before($checkLogin);
+
+$app->error(function (\Exception $e, $code) use($app) {
+    $message = '';
+    switch ($code) {
+        case 404:
+            return $app['twig']->render('404.html');
+            break;
+        default:
+            $message = 'We are sorry, but something went terribly wrong.';
+    }
+
+    return new Response($message);
+});
 
 $app->run();

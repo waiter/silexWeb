@@ -77,7 +77,7 @@ function getPhase($data) {
 
 $rank = $app['controllers_factory'];
 
-$rank->get('/data/{key}/{phase}', function( $key, $phase) use($app) {
+$rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($app) {
     $msg = '错误';
     try {
         $phase = (int)$phase;
@@ -108,12 +108,45 @@ $rank->get('/data/{key}/{phase}', function( $key, $phase) use($app) {
             $info['cache'][$dataKey] = 1;
             $app['cache']->save(Constant::CACHE_RANK_LIST_INFO_PRE.$key, $info);
         }
-
-        return $app['ARes'](1, array(
+        $arr = array(
             'info' => $rank,
             'phase' => $phase,
             'data' => $datas
-        ));
+        );
+        $uid = $request->get('uuid');
+        if ($uid && !empty($uid)) {
+            $user = false;
+            foreach($datas as $i => $d) {
+                if ($d['uuid'] == $uid) {
+                    $user = array(
+                        'rank' => (int)$i + 1,
+                        'uuid' => $uid,
+                        'name' => $d['name'],
+                        'score' => $d['score']
+                    );
+                    break;
+                }
+            }
+            if (!$user) {
+                $sql = 'select name,uuid,score,rank from (select @rownum:=@rownum+1 rank, name,uuid,score from (select @rownum:=0,name,uuid,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
+                if ($rank['min'] >= 0) {
+                    $sql .= ' and score >= '.$rank['min'];
+                }
+                if ($rank['max'] >= $rank['min']) {
+                    $sql .= ' and score <= '.$rank['max'];
+                }
+                $sql .= ' order by score '.($rank['order'] == 1 ? 'asc' : 'desc').", created asc) t ) tt where uuid = '$uid'";
+                $users = $app['db']->fetchAll($sql);
+                if ($users && count($users) > 0) {
+                    $user = $users[0];
+                }
+            }
+            if ($user) {
+                $arr['user'] = $user;
+            }
+        }
+
+        return $app['ARes'](1, $arr);
     } catch(Exception $e) {
         $msg = $e->getMessage();
     }
