@@ -12,24 +12,15 @@ $root = __DIR__;
 
 $app = new Silex\Application();
 
+// config
 $app['config'] = array(
     'title'=> '门前雪瓦上霜'
 );
 
-$checkLogin = function () use($app) {
-    $user = $app['session']->get('user');
-    if (!$user) {
-        return $app->redirect('/index.php/login');
-    }
-};
+// middleware
+include_once 'middleware/checkLogin.php';
 
-$checkLoginApi = function () use($app) {
-    $user = $app['session']->get('user');
-    if (!$user) {
-        return $app['ARes'](0, '需要登录');
-    }
-};
-
+// providers
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => include 'config/config.php'
 ));
@@ -46,6 +37,8 @@ $app->register(new \Silex\Provider\SessionServiceProvider());
 
 $app->register(new ApiResponseProvider());
 
+
+// routers
 $app->mount('/cloud', include 'routers/cloud.php');
 $app->mount('/login', include 'routers/login.php');
 $app->mount('/rank', include 'routers/rank.php');
@@ -59,6 +52,8 @@ $app->get('/', function (Request $request) use($app){
     ));
 })->before($checkLogin);
 
+
+// error handler
 $app->error(function (\Exception $e, $code) use($app) {
     $message = '';
     switch ($code) {

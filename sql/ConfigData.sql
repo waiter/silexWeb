@@ -25,7 +25,7 @@ CREATE TABLE `ConfigData` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `package` varchar(200) NOT NULL,
   `key` varchar(200) NOT NULL,
-  `value` varchar(200) NOT NULL,
+  `value` varchar(500) NOT NULL,
   `desc` varchar(200) NOT NULL,
   `updated` int(11) NOT NULL,
   `created` int(11) NOT NULL,
