@@ -44,7 +44,7 @@ function deleteListCache($a, $key) {
 function getListInfoByKey($a, $key) {
     $infoKey = Constant::CACHE_RANK_LIST_INFO_PRE.$key;
     $info = $a['cache']->get($infoKey);
-    if (!$info) {
+    if (!$info || !$info['info']) {
         $data = $a['db']->fetchAssoc('select * from '.Constant::DB_RANK_LIST." where `key` = '$key' limit 1");
         $info = array(
             'info' => $data,
@@ -100,7 +100,7 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
             if ($rank['max'] >= $rank['min']) {
                 $sql .= ' and score <= '.$rank['max'];
             }
-            $sql .= ' order by score '.($rank['order'] == 1 ? 'asc' : 'desc').', created asc';
+            $sql .= ' order by score '.($rank['order'] == 1 ? 'asc' : 'desc').', updated asc';
             $sql .= ' limit '.$rank['length'];
             $datas = $app['db']->fetchAll($sql);
 
@@ -135,7 +135,7 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
                 if ($rank['max'] >= $rank['min']) {
                     $sql .= ' and score <= '.$rank['max'];
                 }
-                $sql .= ' order by score '.($rank['order'] == 1 ? 'asc' : 'desc').", created asc) t ) tt where uuid = '$uid'";
+                $sql .= ' order by score '.($rank['order'] == 1 ? 'asc' : 'desc').", updated asc) t ) tt where uuid = '$uid'";
                 $users = $app['db']->fetchAll($sql);
                 if ($users && count($users) > 0) {
                     $user = $users[0];
@@ -171,7 +171,7 @@ $rank->get('/upload/{key}', function(Request $request, $key) use($app) {
         if (($rank['min'] >= 0 && $score < $rank['min']) || ($rank['max'] >= 0 && $rank['max'] >= $rank['min'] && $score > $rank['max']) ) {
             throw new Exception('不是合法的分数');
         }
-        if ($check != abs((int)($rank['check'] * sin($score) + $score / $rank['check']))) {
+        if ($check != abs((int)($rank['check'] * sin($score)) + (int)($score / $rank['check']))) {
             throw new Exception('数据不合法');
         }
         $phase = getPhase($rank);

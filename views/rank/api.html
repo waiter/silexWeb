@@ -48,7 +48,7 @@
 <h2>上传分数</h2>
 请求：<code>http://www.waitergame.top/index.php/rank/upload/{key}?uuid={uuid}&name={name}&score={score}&c={check}</code><br/>
 说明：key为排行榜key，必填；uuid为用户唯一id，必填；name为玩家名，选填；score为分数，必填；check为校验值，必填<br/>
-校验值计算：<code>abs((int)(a*sin(x) + x/a))</code>，a为排行榜check值，x为分数<br/>
+校验值计算：<code>abs((int)(a*sin(x)) + (int)(x/a))</code>，a为排行榜check值，x为分数<br/>
 例子：http://www.waitergame.top/index.php/rank/data/D_8_XX_1000<br/>
 返回:
 <pre class="pre-scrollable">
