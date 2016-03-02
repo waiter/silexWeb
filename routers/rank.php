@@ -368,6 +368,19 @@ $rank->delete('/list/delete', function(Request $request) use($app) {
     return $app['ARes'](0, $msg);
 })->before($checkLoginApi);
 
+$rank->delete('/list/clear', function(Request $request) use($app) {
+    $msg = '错误';
+    try {
+        $key = $request->get('key');
+        $app['db']->delete(Constant::DB_RANK_DATA, array('`key`' => $key));
+        deleteListCache($app, $key);
+        return $app['ARes'](1, '清除成功');
+    } catch (Exception $e) {
+        $msg = $e->getMessage();
+    }
+    return $app['ARes'](0, $msg);
+})->before($checkLoginApi);
+
 $rank->get('/list/info/{key}', function(Request $request) use($app) {
     $msg = '错误';
     try {

@@ -27,17 +27,17 @@
     <table id="rank">
         <thead>
             <tr>
-                <th style="min-width: 60px;width: 60px;">#</th>
-                <th style="min-width: 150px;width: 150px;">key</th>
-                <th style="min-width: 100px;">榜名</th>
-                <th style="min-width: 50px;">介绍</th>
-                <th style="min-width: 60px;width: 60px;">类型</th>
-                <th style="min-width: 50px;width: 50px;">排序</th>
-                <th style="min-width: 50px;width: 50px;">长度</th>
+                <th style="min-width: 30px;width: 30px;">#</th>
+                <th style="min-width: 100px;">key</th>
+                <th style="min-width: 30px;">榜名</th>
+                <th style="min-width: 30px;">介绍</th>
+                <th style="min-width: 30px;width: 30px;">类型</th>
+                <th style="min-width: 30px;width: 30px;">排序</th>
+                <th style="min-width: 40px;width: 40px;">长度</th>
                 <th style="min-width: 60px;">值范围</th>
-                <th style="min-width: 50px;">用户</th>
-                <th style="min-width: 50px;">校验值</th>
-                <th style="min-width: 170px;width: 170px;">操作</th>
+                <th style="min-width: 30px;width: 30px;">用户</th>
+                <th style="min-width: 50px;width: 50px;">校验值</th>
+                <th style="min-width: 230px;width: 230px;">操作</th>
             </tr>
         </thead>
         <tbody>
@@ -58,6 +58,7 @@
                     <button class="btn btn-sm btn-info" onclick="showRank('{{item.key}}')">当期排行</button>
                     <button class="btn btn-sm btn-success" onclick="editRank('{{ item.key }}')">编辑</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteRank( '{{ item.key }}' )">删除</button>
+                    <button class="btn btn-sm btn-danger" onclick="clearRank( '{{ item.key }}' )">清除数据</button>
                 </td>
             </tr>
         {%endfor%}
@@ -321,6 +322,28 @@
                     } else {
                         alert(data.msg);
                     }
+                }
+            });
+        }
+    }
+    function clearRank(key) {
+        if (confirm('确认要清除排行数据吗？该操作会删除所有该排行榜的用户数据，且无法恢复！！')) {
+            if (isNetwork) {
+                alert("网络操作中...");
+                return;
+            }
+            isNetwork = true;
+            $.ajax({
+                type: 'delete',
+                url: '/index.php/rank/list/clear',
+                data: {key: key},
+                error: function() {
+                    alert('网络错误');
+                    isNetwork = false;
+                },
+                success: function(data) {
+                    isNetwork = false;
+                    alert(data.msg);
                 }
             });
         }
