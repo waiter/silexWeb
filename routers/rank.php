@@ -171,7 +171,7 @@ $rank->get('/upload/{key}', function(Request $request, $key) use($app) {
         if (($rank['min'] >= 0 && $score < $rank['min']) || ($rank['max'] >= 0 && $rank['max'] >= $rank['min'] && $score > $rank['max']) ) {
             throw new Exception('不是合法的分数');
         }
-        if ($check != abs((int)($rank['check'] * sin($score)) + (int)($score / $rank['check']))) {
+        if ($check != (int)abs((int)($rank['check']) * sin($score) + (int)($score / $rank['check']))) {
             throw new Exception('数据不合法');
         }
         $phase = getPhase($rank);
