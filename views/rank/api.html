@@ -46,8 +46,8 @@
 }
     </pre>
 <h2>上传分数</h2>
-请求：<code>http://www.waitergame.top/index.php/rank/upload/{key}?uuid={uuid}&name={name}&score={score}&c={check}</code><br/>
-说明：key为排行榜key，必填；uuid为用户唯一id，必填；name为玩家名，选填；score为分数，必填；check为校验值，必填<br/>
+请求：<code>http://www.waitergame.top/index.php/rank/upload/{key}?uuid={uuid}&name={name}&score={score}&c={check}&force={force}</code><br/>
+说明：key为排行榜key，必填；uuid为用户唯一id，必填；name为玩家名，选填；score为分数，必填；check为校验值，必填；force为是否强制更新数据，1为强制，其他或不传都不强制<br/>
 校验值计算：<code>(int)abs(a*sin(x) + (int)(x/a))</code>，a为排行榜check值，x为分数<br/>
 例子：http://www.waitergame.top/index.php/rank/data/D_8_XX_1000<br/>
 返回:
@@ -56,4 +56,15 @@
   state: 1, // 获取状态，成功为1，其他情况皆为失败，msg是错误信息
   msg: "上传成功"
 }
-    </pre>
+</pre>
+<h2>更改名字</h2>
+请求：<code>http://www.waitergame.top/index.php/rank/change/{key}?uuid={uuid}&name={name}</code><br/>
+说明：key为排行榜key，必填；uuid为用户唯一id，必填；name为玩家名，必填<br/>
+例子：http://www.waitergame.top/index.php/rank/change/D_8_XX_1000?uuid=xxxhuah&name=waiter<br/>
+返回:
+<pre class="pre-scrollable">
+{
+  state: 1, // 获取状态，成功为1，其他情况皆为失败，msg是错误信息
+  msg: "更名成功"
+}
+</pre>

@@ -165,6 +165,7 @@ $rank->get('/upload/{key}', function(Request $request, $key) use($app) {
         $name = $request->get('name');
         $uuid = $request->get('uuid');
         $check = (int)$request->get('c');
+        $force = (int)$request->get('force', '0');
         if (!$uuid || empty($uuid)) {
             throw new Exception('必须上传用户唯一id');
         }
@@ -182,7 +183,7 @@ $rank->get('/upload/{key}', function(Request $request, $key) use($app) {
             $users = $app['db']->fetchAll('select id,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase and uuid = '$uuid' limit 1");
             if ($users && count($users) > 0) {
                 $tempD = $users[0];
-                if ( ($rank['order'] == 1 && $score < $tempD['score']) || ($rank['order'] == 0 && $score > $tempD['score'])) {
+                if ($force == 1 || ($rank['order'] == 1 && $score < $tempD['score']) || ($rank['order'] == 0 && $score > $tempD['score'])) {
                     $ua = array(
                         'score' => $score,
                         'updated' => $time,
@@ -226,6 +227,34 @@ $rank->get('/upload/{key}', function(Request $request, $key) use($app) {
 
         return $app['ARes'](1, '上传成功');
     } catch (Exception $e) {
+        $msg = $e->getMessage();
+    }
+    return $app['ARes'](0, $msg);
+});
+
+$rank->get('/change/{key}', function(Request $request, $key) use($app) {
+    $msg = '错误';
+    try {
+        $name = $request->get('name');
+        $uuid = $request->get('uuid');
+        if (!$uuid || empty($uuid)) {
+            throw new Exception('必须上传用户唯一id');
+        }
+        if (!$name || empty($name)) {
+            throw new Exception('必须上传用户名');
+        }
+        $time = time();
+        $ua = array(
+            'name' => $name,
+            'updated' => $time,
+        );
+        $app['db']->update(Constant::DB_RANK_DATA, $ua, array(
+            '`key`' => $key,
+            'uuid' => $uuid
+        ));
+        deleteListCache($app, $key);
+        return $app['ARes'](1, '更名成功');
+    } catch(Exception $e) {
         $msg = $e->getMessage();
     }
     return $app['ARes'](0, $msg);
