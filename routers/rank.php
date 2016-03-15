@@ -244,15 +244,18 @@ $rank->get('/change/{key}', function(Request $request, $key) use($app) {
             throw new Exception('必须上传用户名');
         }
         $time = time();
-        $ua = array(
-            'name' => $name,
-            'updated' => $time,
-        );
-        $app['db']->update(Constant::DB_RANK_DATA, $ua, array(
-            '`key`' => $key,
-            'uuid' => $uuid
-        ));
-        deleteListCache($app, $key);
+        $info = getListInfoByKey($app, $key);
+        $gameId = $info['info']['gameId'];
+        $lists = getRankList($app, $gameId);
+        if ($lists && count($lists) > 0) {
+            $sql = 'update '.Constant::DB_RANK_DATA." set name='$name',updated=$time where uuid = '$uuid' and `key` in ('{$lists[0]['key']}'";
+            foreach($lists as $list) {
+                $sql .= ",'{$list['key']}'";
+                deleteListCache($app, $list['key']);
+            }
+            $sql .= ')';
+            $app['db']->query($sql);
+        }
         return $app['ARes'](1, '更名成功');
     } catch(Exception $e) {
         $msg = $e->getMessage();
