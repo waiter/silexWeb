@@ -75,6 +75,24 @@ function getPhase($data) {
     return $p;
 }
 
+function rankSaveFile($root, $id, $content) {
+    $fileName = $root."/__rank__/$id.rank";
+    $myfile = fopen($fileName, "w");
+    fwrite($myfile, $content);
+    fclose($myfile);
+}
+
+function rankReadFile($root, $id) {
+    $fileName = $root."/__rank__/$id.rank";
+    $myfile = fopen($fileName, "r");
+    if (!$myfile ) {
+        throw new Exception("无数据");
+    }
+    $content = fread($myfile,filesize($fileName));
+    fclose($myfile);
+    return $content;
+}
+
 $rank = $app['controllers_factory'];
 
 $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($app) {
@@ -93,7 +111,7 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
         $dataKey = Constant::CACHE_RANK_DATA_PRE.$key.'_'.$phase;
         $datas = $app['cache']->get($dataKey);
         if (!$datas) {
-            $sql = 'select name,uuid,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
+            $sql = 'select id,name,uuid,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
             if ($rank['min'] >= 0) {
                 $sql .= ' and score >= '.$rank['min'];
             }
@@ -121,6 +139,7 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
                     $user = array(
                         'rank' => (int)$i + 1,
                         'uuid' => $uid,
+                        'id' => $d['id'],
                         'name' => $d['name'],
                         'score' => $d['score']
                     );
@@ -128,7 +147,7 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
                 }
             }
             if (!$user) {
-                $sql = 'select name,uuid,score,rank from (select @rownum:=@rownum+1 rank, name,uuid,score from (select @rownum:=0,name,uuid,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
+                $sql = 'select id,name,uuid,score,rank from (select @rownum:=@rownum+1 rank, name,uuid,score from (select @rownum:=0,name,uuid,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
                 if ($rank['min'] >= 0) {
                     $sql .= ' and score >= '.$rank['min'];
                 }
@@ -153,7 +172,40 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
     return $app['ARes'](0, $msg);
 })->value('phase', 0);
 
-$rank->get('/upload/{key}', function(Request $request, $key) use($app) {
+$rank->get('/extra/{id}', function(Request $request, $id) use($app, $root) {
+    $msg = '错误';
+    try {
+        $content = rankReadFile($root, $id);
+        return $app['ARes'](1, $content);
+    } catch (Exception $e) {
+        $msg = $e->getMessage();
+    }
+    return $app['ARes'](0, $msg);
+});
+
+$rank->get('/deleteUnuse', function() use($app, $root) {
+    $ids = $app['db']->fetchAll('select id from '.Constant::DB_RANK_DATA." order by id desc");
+    $msg = '';
+    if ($ids && count($ids) > 0) {
+        $max = (int)$ids[0]['id'];
+        $useIds = array();
+        foreach($ids as $i => $d) {
+            $useIds[$d] = 1;
+        }
+        for ($i = 1; $i < $max; $i++) {
+            if (!$useIds[$i]) {
+                try {
+                    unlink($root."/__rank__/$i.rank");
+                } catch (Exception $e) {
+                    $msg .= $e->getMessage();
+                }
+            }
+        }
+    }
+    return $app['ARes'](1, $msg);
+})->before($checkLoginApi);
+
+$rank->match('/upload/{key}', function(Request $request, $key) use($app, $root) {
     $msg = '错误';
     try {
         $info = getListInfoByKey($app, $key);
@@ -166,6 +218,7 @@ $rank->get('/upload/{key}', function(Request $request, $key) use($app) {
         $uuid = $request->get('uuid');
         $check = (int)$request->get('c');
         $force = (int)$request->get('force', '0');
+        $extra = $request->get('extra');
         if (!$uuid || empty($uuid)) {
             throw new Exception('必须上传用户唯一id');
         }
@@ -192,6 +245,9 @@ $rank->get('/upload/{key}', function(Request $request, $key) use($app) {
                         $ua['name'] = $name;
                     }
                     $app['db']->update(Constant::DB_RANK_DATA, $ua, array('id' => $tempD['id']));
+                    if ($extra && !empty($extra)) {
+                        rankSaveFile($root, $tempD['id'], $extra);
+                    }
                 } else {
                     $needCheck = false;
                 }
@@ -212,6 +268,9 @@ $rank->get('/upload/{key}', function(Request $request, $key) use($app) {
                 'updated' => $time,
                 'created' => $time
             ));
+            if ($extra && !empty($extra)) {
+                rankSaveFile($root, $app['db']->lastInsertId(), $extra);
+            }
         }
         if ($needCheck) {
             $dataKey = Constant::CACHE_RANK_DATA_PRE.$key.'_'.$phase;
@@ -230,7 +289,7 @@ $rank->get('/upload/{key}', function(Request $request, $key) use($app) {
         $msg = $e->getMessage();
     }
     return $app['ARes'](0, $msg);
-});
+})->method('GET|POST');
 
 $rank->get('/change/{key}', function(Request $request, $key) use($app) {
     $msg = '错误';

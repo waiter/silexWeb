@@ -28,15 +28,18 @@
     },
     phase: 2, // 排行榜第几期
     data: [{  // 排行榜具体内容
+      id: "16", // 排行中唯一id
       name: "dahu",
       uuid: "1xsda",
       score: "300"
     }, {
+      id: "17",
       name: "dahu",
       uuid: "2xsda",
       score: "300"
     }],
     user: {  // 如果传了uuid，且找得到该uuid，则有该字段，不然没有
+      id: "16",
       name: "dahu",
       uuid: "1xsda",
       score: "300",
@@ -46,8 +49,8 @@
 }
     </pre>
 <h2>上传分数</h2>
-请求：<code>http://www.waitergame.top/index.php/rank/upload/{key}?uuid={uuid}&name={name}&score={score}&c={check}&force={force}</code><br/>
-说明：key为排行榜key，必填；uuid为用户唯一id，必填；name为玩家名，选填；score为分数，必填；check为校验值，必填；force为是否强制更新数据，1为强制，其他或不传都不强制<br/>
+请求：<code>http://www.waitergame.top/index.php/rank/upload/{key}?uuid={uuid}&name={name}&score={score}&c={check}&force={force}&extra={extra}</code><br/>
+说明：改接口除key以外，都可以使用<code>get</code>或<code>post</code>传输；key为排行榜key，必填；uuid为用户唯一id，必填；name为玩家名，选填；score为分数，必填；check为校验值，必填；force为是否强制更新数据，1为强制，其他或不传都不强制；extra为额外信息，可不传，以字符串传输，推荐使用<code>post</code>传输<br/>
 校验值计算：<code>(int)abs(a*sin(x) + (int)(x/a))</code>，a为排行榜check值，x为分数<br/>
 例子：http://www.waitergame.top/index.php/rank/data/D_8_XX_1000<br/>
 返回:
@@ -55,6 +58,17 @@
 {
   state: 1, // 获取状态，成功为1，其他情况皆为失败，msg是错误信息
   msg: "上传成功"
+}
+</pre>
+<h2>获取排行榜额外信息</h2>
+请求：<code>http://www.waitergame.top/index.php/rank/extra/{id}</code><br/>
+说明：id为排行榜某一条数据的id<br/>
+例子：http://www.waitergame.top/index.php/rank/extra/16<br/>
+返回:
+<pre class="pre-scrollable">
+{
+  state: 1, // 获取状态，成功为1，其他情况皆为失败，msg是错误信息
+  msg: "b8s9djka98djkha766"
 }
 </pre>
 <h2>更改名字</h2>
