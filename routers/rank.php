@@ -147,7 +147,7 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
                 }
             }
             if (!$user) {
-                $sql = 'select id,name,uuid,score,rank from (select @rownum:=@rownum+1 rank, name,uuid,score from (select @rownum:=0,name,uuid,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
+                $sql = 'select id,name,uuid,score,rank from (select @rownum:=@rownum+1 rank,id, name,uuid,score from (select @rownum:=0,id,name,uuid,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
                 if ($rank['min'] >= 0) {
                     $sql .= ' and score >= '.$rank['min'];
                 }
