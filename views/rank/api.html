@@ -1,7 +1,7 @@
 <h1>接口说明</h1>
 <h2>获取排行榜信息</h2>
-请求：<code>http://www.waitergame.top/index.php/rank/data/{key}/{phase}?uuid={uuid}</code><br/>
-说明：key为排行榜key，必填，phase为第几期，可不填，uuid为用户唯一id，可不填<br/>
+请求：<code>http://www.waitergame.top/index.php/rank/data/{key}/{phase}?uuid={uuid}&from={from}&to={to}</code><br/>
+说明：key为排行榜key，必填，phase为第几期，可不填;uuid为用户唯一id，可不填;from为排行榜截取开始排行，最小为1，可不填；to为排行榜截取结束排行，可不填<br/>
 例子：http://www.waitergame.top/index.php/rank/data/D_8_XX_1000?uuid=1xsda<br/>
 返回:
 <pre class="pre-scrollable">
@@ -27,6 +27,9 @@
       created: "1455717053"
     },
     phase: 2, // 排行榜第几期
+    length: 2, // 排行当时实际长度(未截取)
+    from: 1, // 截取排行：开始排名
+    to: 2, // 截取排行：结束排名
     data: [{  // 排行榜具体内容
       id: "16", // 排行中唯一id
       name: "dahu",

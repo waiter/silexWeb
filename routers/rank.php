@@ -126,10 +126,21 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
             $info['cache'][$dataKey] = 1;
             $app['cache']->save(Constant::CACHE_RANK_LIST_INFO_PRE.$key, $info);
         }
+        $dataLength = count($datas);
+        $from = $request->get('from');
+        $to = $request->get('to');
+        $from = $from && !empty($from) ? (int)$from : 1;
+        $to = $to && !empty($to) ? (int)$to : $dataLength;
+        $from = $from < 1 ? 1 : $from;
+        $to = $to < $from ? $from : $to;
+        $sliceData = array_slice($datas, $from - 1, $to - $from + 1);
         $arr = array(
             'info' => $rank,
             'phase' => $phase,
-            'data' => $datas
+            'length' => $dataLength,
+            'from' => $from,
+            'to' => $to,
+            'data' => $sliceData
         );
         $uid = $request->get('uuid');
         if ($uid && !empty($uid)) {
