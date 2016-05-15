@@ -356,7 +356,7 @@
         isNetwork = true;
         $.ajax({
             type: 'get',
-            url: '/index.php/rank/data/'+key,
+            url: '/index.php/rank/data/'+key+'?to=50',
             error: function() {
                 alert('网络错误');
                 isNetwork = false;
@@ -372,7 +372,7 @@
         });
     }
     function showRankDialog(data) {
-        $('#dataDialogLabel').html(data.info.name + '第' + data.phase + '期排行榜');
+        $('#dataDialogLabel').html(data.info.name + '第' + data.phase + '期排行榜（最多显示前50）');
         var count = data.data.length;
         var body = $('#dataBody');
         body.empty();
