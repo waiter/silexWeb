@@ -111,7 +111,7 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
         $dataKey = Constant::CACHE_RANK_DATA_PRE.$key.'_'.$phase;
         $datas = $app['cache']->get($dataKey);
         if (!$datas) {
-            $sql = 'select id,name,uuid,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
+            $sql = 'select id,name,uuid,score,hasExtra from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
             if ($rank['min'] >= 0) {
                 $sql .= ' and score >= '.$rank['min'];
             }
@@ -152,13 +152,14 @@ $rank->get('/data/{key}/{phase}', function(Request $request, $key, $phase) use($
                         'uuid' => $uid,
                         'id' => $d['id'],
                         'name' => $d['name'],
-                        'score' => $d['score']
+                        'score' => $d['score'],
+                        'hasExtra' => $d['hasExtra']
                     );
                     break;
                 }
             }
             if (!$user) {
-                $sql = 'select id,name,uuid,score,rank from (select @rownum:=@rownum+1 rank,id, name,uuid,score from (select @rownum:=0,id,name,uuid,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
+                $sql = 'select id,name,uuid,score,rank,hasExtra from (select @rownum:=@rownum+1 rank,id, name,uuid,score,hasExtra from (select @rownum:=0,id,name,uuid,score,hasExtra from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase";
                 if ($rank['min'] >= 0) {
                     $sql .= ' and score >= '.$rank['min'];
                 }
@@ -244,21 +245,24 @@ $rank->match('/upload/{key}', function(Request $request, $key) use($app, $root) 
         $isInsert = false;
         $needCheck = true;
         if ($rank['unique'] == 1) {
-            $users = $app['db']->fetchAll('select id,score from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase and uuid = '$uuid' limit 1");
+            $users = $app['db']->fetchAll('select id,score,hasExtra from '.Constant::DB_RANK_DATA." where `key` = '$key' and phase = $phase and uuid = '$uuid' limit 1");
             if ($users && count($users) > 0) {
                 $tempD = $users[0];
                 if ($force == 1 || ($rank['order'] == 1 && $score < $tempD['score']) || ($rank['order'] == 0 && $score > $tempD['score'])) {
+                    $hasExtra = $tempD['hasExtra'];
+                    if ($extra && !empty($extra)) {
+                        $hasExtra = 1;
+                        rankSaveFile($root, $tempD['id'], $extra);
+                    }
                     $ua = array(
                         'score' => $score,
+                        'hasExtra' => $hasExtra,
                         'updated' => $time,
                     );
                     if ($name && !empty($name)) {
                         $ua['name'] = $name;
                     }
                     $app['db']->update(Constant::DB_RANK_DATA, $ua, array('id' => $tempD['id']));
-                    if ($extra && !empty($extra)) {
-                        rankSaveFile($root, $tempD['id'], $extra);
-                    }
                 } else {
                     $needCheck = false;
                 }
@@ -276,6 +280,7 @@ $rank->match('/upload/{key}', function(Request $request, $key) use($app, $root) 
                 'name' => $rn,
                 'uuid' => $uuid,
                 'score' => $score,
+                'hasExtra' => $extra && !empty($extra) ? 1 : 0,
                 'updated' => $time,
                 'created' => $time
             ));
