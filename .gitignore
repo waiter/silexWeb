@@ -1,7 +1,6 @@
-cache/
-config/
-upload/
+/cache/
+/config/
+/upload/
 .DS_Store
 .idea/
-!views/config/
-__rank__
+/__rank__/
