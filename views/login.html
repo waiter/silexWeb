@@ -55,12 +55,21 @@
             </div>
         </form>
     </div>
-    <button  type="button" class="btn btn-primary btn-block" style="margin-top: 30px;" onclick="clickLogin()">登录</button>
+    <button id="submit" type="button" class="btn btn-primary btn-block" style="margin-top: 30px;" onclick="clickLogin()">登录</button>
 </div>
 <div class="footer">
     备案/许可证编号: <a href="http://www.miitbeian.gov.cn/">浙ICP备16003993号</a>
 </div>
 <script>
+    $(function(){
+      $("input").keypress(function(e){
+        if (event.keyCode == 13) {
+          event.cancelBubble = true;
+          event.returnValue = false;
+          $("#submit").click();
+        }
+      });
+    });
     function clickLogin() {
         $.ajax({
             url: '/index.php/login/in',
