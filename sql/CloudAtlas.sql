@@ -33,6 +33,7 @@ CREATE TABLE `CloudAtlas` (
   `priority` int(11) NOT NULL DEFAULT '0',
   `download` varchar(500) NOT NULL,
   `channel` varchar(30) NOT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0: 正常, 1: 废弃',
   `updated` int(11) NOT NULL,
   `created` int(11) NOT NULL,
   PRIMARY KEY (`id`)

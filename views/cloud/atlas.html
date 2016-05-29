@@ -10,9 +10,19 @@
         td {
             word-break:break-all;
             word-wrap:break-word;
+            position: relative;
         }
         .vbtn {
             margin-bottom: 5px;
+        }
+        .abandon td::after {
+            content: "";
+            width: 100%;
+            position: absolute;
+            background-color: rgba(14, 13, 13, 0.490196);
+            left: 0px;
+            height: 1px;
+            top: 50%;
         }
     </style>
 </head>
@@ -41,7 +51,7 @@
         </thead>
         <tbody>
         {% for key, item in list %}
-            <tr id="list-{{item.id}}">
+            <tr id="list-{{item.id}}" class="{{item.status == 0 ? '' : 'abandon'}}">
                 <th style="vertical-align: middle;">{{key+1}}</th>
                 <th style="vertical-align: middle;" class="conPriority">{{item.priority}}</th>
                 <td style="vertical-align: middle;text-align: center;"><img style="width: 80px;" src="{{item.icon}}" alt="图标" class="img-rounded conIcon"></td>
@@ -67,10 +77,10 @@
                     [竖宣传图]
                 {% endif %}<br/>
                 </td>
-                <td style="text-align: center;vertical-align: middle;">
-                    <button class="btn btn-sm btn-success vbtn" onclick="editOld({{ item.id }})">编辑</button><br/>
+                <th style="text-align: center;vertical-align: middle;">
+                    <button class="btn btn-sm btn-success vbtn" onclick="editOld({{ item.id }}, {{ item.status }})">编辑</button><br/>
                     <button class="btn btn-sm btn-danger" onclick="onClickDelete( {{ item.id }} )">删除</button><br/>
-                </td>
+                </th>
             </tr>
         {% endfor %}
         </tbody>
@@ -203,6 +213,17 @@
                             <p class="editImageVerticalP">不传为不更改</p>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">状态</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" name="status" value="0" checked="checked"> 正常
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="status" value="1"> 废弃
+                            </label>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -252,7 +273,7 @@
         $('#editForm p.editImageVerticalP').html('');
         $('#editDialog').modal('show');
     }
-    function editOld(id) {
+    function editOld(id, status) {
         var tr = $('#list-'+id);
         $('#editDialogLabel').html('编辑配置');
         $('#editForm input[name=id]').val(id);
@@ -266,6 +287,7 @@
         $('#editForm p.editIconP').html('不传为不更改。当前为：'+tr.children('td').children('img.conIcon').attr('src'));
         $('#editForm p.editImageHorizontalP').html('不传为不更改。当前为：'+tr.children('td').children('a.conImageHorizontal').attr('href'));
         $('#editForm p.editImageVerticalP').html('不传为不更改。当前为：'+tr.children('td').children('a.conImageVertical').attr('href'));
+        $('#editForm input[name=status][value='+status+']').attr('checked', 'true');
         $('#editDialog').modal('show');
     }
     function ajaxEdit() {

@@ -53,7 +53,7 @@ $ad->get('/atlas/{package}/{channel}', function($package, $channel) use($app) {
         $cacheKey = Constant::CACHE_CLOUD_ATLAS_PRE.$package.'_'.$channel;
         $res = $app['cache']->get($cacheKey);
         if (!$res) {
-            $res = $app['db']->fetchAll('SELECT * FROM '.Constant::DB_CLOUD_ATLAS." WHERE channel = '$channel' and package <> '$package' order by priority desc limit 30");
+            $res = $app['db']->fetchAll('SELECT * FROM '.Constant::DB_CLOUD_ATLAS." WHERE channel = '$channel' and package <> '$package' and `status` = 0 order by priority desc limit 30");
             $app['cache']->save($cacheKey, $res);
             pushCache($app['cache'], $cacheKey);
         }
@@ -124,6 +124,7 @@ $ad->post('/atlas/edit', function(Request $request) use($app, $root) {
         $desc = $request->get('desc');
         $download = $request->get('download');
         $channel = $request->get('channel');
+        $status = $request->get('status');
         $iconPath = '';
         $imageHPath = '';
         $imageVPath = '';
@@ -158,7 +159,8 @@ $ad->post('/atlas/edit', function(Request $request) use($app, $root) {
             '`type`' => $type,
             '`desc`' => $desc,
             'download' => $download,
-            'channel' => $channel
+            'channel' => $channel,
+            '`status`' => $status
         );
 
 
