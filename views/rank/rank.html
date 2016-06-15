@@ -372,7 +372,7 @@
         });
     }
     function showRankDialog(data) {
-        $('#dataDialogLabel').html(data.info.name + '第' + data.phase + '期排行榜（最多显示前50）');
+        $('#dataDialogLabel').html(data.info.key + '第' + data.phase + '期排行榜（最多显示前50）');
         var count = data.data.length;
         var body = $('#dataBody');
         body.empty();
