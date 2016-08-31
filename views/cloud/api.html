@@ -1,7 +1,7 @@
 <h1>接口信息</h1>
-请求：<code>http://www.waitergame.top/index.php/cloud/atlas/{package}/{channel}</code><br/>
-说明：package为包名，必填；channel为渠道，必填<br/>
-例子：http://www.waitergame.top/index.php/cloud/atlas/xxx/googleplay<br/>
+请求：<code>http://www.waitergame.top/index.php/cloud/atlas/{package}/{channel}?lan={lan}</code><br/>
+说明：package为包名，必填；channel为渠道，必填; lan为语言设置，选填，会优先选择语言相同的云图<br/>
+例子：http://www.waitergame.top/index.php/cloud/atlas/xxx/googleplay?lan=zh-CN<br/>
 返回:
 <pre class="pre-scrollable">
 // 正常则返回一下数据，错误是可能返回空json，即 {}
@@ -18,6 +18,7 @@
   download: "https://play.google.com/store/apps/details?id=com.monkeystudio.spacewar",
   channel: "googleplay",
   updated: "1454813708",
-  created: "1454737074"
+  created: "1454737074",
+  language: "zh-CN"
 }
     </pre>

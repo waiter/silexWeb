@@ -48,12 +48,14 @@ function checkPackageInBlack($black, $package) {
 
 $ad = $app['controllers_factory'];
 
-$ad->get('/atlas/{package}/{channel}', function($package, $channel) use($app) {
+$ad->get('/atlas/{package}/{channel}', function(Request $request, $package, $channel) use($app) {
     if (!checkPackageInBlack(getBlackList($app), $package)) {
-        $cacheKey = Constant::CACHE_CLOUD_ATLAS_PRE.$package.'_'.$channel;
+        $lan = $request->get('lan');
+        $cacheKey = Constant::CACHE_CLOUD_ATLAS_PRE.$package.'_'.$channel.'_'.$lan;
+        $lans = empty($lan) ? '' : "','$lan";
         $res = $app['cache']->get($cacheKey);
         if (!$res) {
-            $res = $app['db']->fetchAll('SELECT * FROM '.Constant::DB_CLOUD_ATLAS." WHERE channel = '$channel' and package <> '$package' and `status` = 0 order by priority desc limit 30");
+            $res = $app['db']->fetchAll('SELECT * FROM '.Constant::DB_CLOUD_ATLAS." WHERE channel = '$channel' and package <> '$package' and `status` = 0 and `language` in ('$lans') order by language desc,priority desc limit 30");
             $app['cache']->save($cacheKey, $res);
             pushCache($app['cache'], $cacheKey);
         }
@@ -63,8 +65,9 @@ $ad->get('/atlas/{package}/{channel}', function($package, $channel) use($app) {
                 $res[0]
             );
             $priority = $res[0]['priority'];
+            $nowLang = $res[0]['language'];
             $tmp = 1;
-            while($tmp < $count && $res[$tmp]['priority'] == $priority) {
+            while($tmp < $count && $res[$tmp]['priority'] == $priority && $res[$tmp]['language'] == $nowLang) {
                 array_push($array, $res[$tmp]);
                 $tmp++;
             }
@@ -118,6 +121,7 @@ $ad->post('/atlas/edit', function(Request $request) use($app, $root) {
         $id = (int)$request->get('id');
         $appName = $request->get('appName');
         $package = $request->get('package');
+        $language = $request->get('language');
         $priority = $request->get('priority');
         $priority = empty($priority) ? 0 : (int)$priority;
         $type = $request->get('type');
@@ -155,6 +159,7 @@ $ad->post('/atlas/edit', function(Request $request) use($app, $root) {
         $array = array(
             'appName' => $appName,
             'package' => $package,
+            'language' => $language,
             'priority' => $priority,
             '`type`' => $type,
             '`desc`' => $desc,
