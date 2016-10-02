@@ -240,10 +240,10 @@
         $('#editForm input[name=name]').val(data.name);
         $('#editForm textarea[name=desc]').val(data.desc);
         $('#editForm input[name=key]').val(data.key);
-        $('#editForm input[name=type]').val(data.type);
+        $('#editForm input[name=type][value='+data.type+']').attr('checked', true);
         $('#editForm input[name=pre]').val(data.pre);
-        $('#editForm input[name=order]').val(data.order);
-        $('#editForm input[name=unique]').val(data.unique);
+        $('#editForm input[name=order][value='+data.order+']').attr('checked', true);
+        $('#editForm input[name=unique][value='+data.unique+']').attr('checked', true);
         $('#editForm input[name=check]').val(data.check);
         $('#editForm input[name=numMin]').val(data.num);
         $('#editForm input[name=length]').val(data.length);
