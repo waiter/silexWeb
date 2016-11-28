@@ -16,6 +16,7 @@ class Constant
     const DB_RANK_DATA = 'RankData';
     const DB_CONFIG_GAME = 'ConfigGame';
     const DB_CONFIG_DATA = 'ConfigData';
+    const DB_BOOKTALK_USER = 'BooktalkUser';
 
     const CACHE_CLOUD_ATLAS_ALL = 'cacheCAAll';
     const CACHE_CLOUD_ATLAS_LIST = 'cacheCAList';
@@ -27,9 +28,20 @@ class Constant
     const CACHE_RANK_DATA_PRE = 'cacheRDPre_';
     const CACHE_CONFIG_GAME_ALL = 'cacheCGAll';
     const CACHE_CONFIG_DATA_PRE = 'cacheCDPre_';
+    const CACHE_BOOKTALK_USER_TOKEN_PRE = 'cacheBTUTPre_';
+    const CACHE_BOOKTALK_IM_TOKEN = 'cacheBTIT';
 
     const DAY_TIME = 86400;
     const WEEK_TIME = 604800;
+
+    const BOOKTALK_IM_ORG = 'waitergame';
+    const BOOKTALK_IM_APP = 'findme';
+    const BOOKTALK_IM_CLENT_ID = 'YXA6oSs_AFk6Eeaqsb3aT5PtfA';
+    const BOOKTALK_IM_CLENT_SECRET = 'YXA67A3hgrpTTGm2LR8nFfOvx3ojUNc';
+    const BOOKTALK_IM_BASE_URL = 'https://a1.easemob.com/'.Constant::BOOKTALK_IM_ORG.'/'.Constant::BOOKTALK_IM_APP;
+
+    const BOOKTALK_USER_BASE_MONEY = 100;
+    const BOOKTALK_USER_MONEY_EVERY = 5;
 
     public static $RankType = array('A', 'D', 'W', 'M');
 }

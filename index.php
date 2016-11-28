@@ -19,6 +19,8 @@ $app['config'] = array(
 
 // middleware
 include_once 'middleware/checkLogin.php';
+include_once 'middleware/vaildCheck.php';
+include_once 'middleware/httpUtil.php';
 
 // providers
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
@@ -44,6 +46,7 @@ $app->mount('/login', include 'routers/login.php');
 $app->mount('/rank', include 'routers/rank.php');
 $app->mount('/c', include 'routers/c.php');
 $app->mount('/config', include 'routers/config.php');
+$app->mount('/booktalk', include 'routers/booktalk.php');
 
 $app->get('/', function (Request $request) use($app){
     preg_match('/upload\/.*/','http://localhost:8084/upload/cloud/icon_1454773492.png', $res);
