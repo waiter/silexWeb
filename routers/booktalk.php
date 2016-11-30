@@ -4,12 +4,12 @@ use Symfony\Component\HttpFoundation\Request;
 
 function booktalk_im_make_token() {
   $res = http_post_url(
-    Constant::BOOKTALK_IM_BASE_URL.'/token',
+    Idontknow::BOOKTALK_IM_BASE_URL.'/token',
     'Content-Type: application/json',
     json_encode(array(
       'grant_type'=>'client_credentials',
-      'client_id'=>Constant::BOOKTALK_IM_CLENT_ID,
-      'client_secret'=>Constant::BOOKTALK_IM_CLENT_SECRET
+      'client_id'=>Idontknow::BOOKTALK_IM_CLENT_ID,
+      'client_secret'=>Idontknow::BOOKTALK_IM_CLENT_SECRET
     ))
   );
   $data = json_decode($res, true);
@@ -37,7 +37,7 @@ function booktalk_im_create_user($a, $user, $psw, $name) {
   $token = booktalk_im_get_token($a);
   if ($token) {
     $create = http_post_url(
-    Constant::BOOKTALK_IM_BASE_URL.'/users',
+    Idontknow::BOOKTALK_IM_BASE_URL.'/users',
     "Content-Type: application/json\r\n"."Authorization: Bearer ".$token,
     json_encode(array(
       'username'=>$user,

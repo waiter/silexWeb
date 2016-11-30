@@ -4,6 +4,7 @@ require_once __DIR__.'/vendor/autoload.php';
 require_once __DIR__.'/constant/Constant.php';
 require_once __DIR__.'/logic/FileCacheProvider.php';
 require_once __DIR__.'/logic/ApiResponseProvider.php';
+require_once __DIR__.'/config/Idontknow.php';
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

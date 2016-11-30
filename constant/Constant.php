@@ -34,12 +34,6 @@ class Constant
     const DAY_TIME = 86400;
     const WEEK_TIME = 604800;
 
-    const BOOKTALK_IM_ORG = 'waitergame';
-    const BOOKTALK_IM_APP = 'findme';
-    const BOOKTALK_IM_CLENT_ID = 'YXA6oSs_AFk6Eeaqsb3aT5PtfA';
-    const BOOKTALK_IM_CLENT_SECRET = 'YXA67A3hgrpTTGm2LR8nFfOvx3ojUNc';
-    const BOOKTALK_IM_BASE_URL = 'https://a1.easemob.com/'.Constant::BOOKTALK_IM_ORG.'/'.Constant::BOOKTALK_IM_APP;
-
     const BOOKTALK_USER_BASE_MONEY = 100;
     const BOOKTALK_USER_MONEY_EVERY = 5;
 
