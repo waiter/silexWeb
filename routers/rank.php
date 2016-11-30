@@ -475,7 +475,7 @@ $rank->delete('/list/delete', function(Request $request) use($app) {
     return $app['ARes'](0, $msg);
 })->before($checkLoginApi);
 
-$rank->delete('/list/clear', function(Request $request) use($app) {
+$rank->match('/list/clear', function(Request $request) use($app) {
     $msg = '错误';
     try {
         $key = $request->get('key');
@@ -486,7 +486,7 @@ $rank->delete('/list/clear', function(Request $request) use($app) {
         $msg = $e->getMessage();
     }
     return $app['ARes'](0, $msg);
-})->before($checkLoginApi);
+})->method('GET|DELETE')->before($checkLoginApi);
 
 $rank->get('/list/info/{key}', function(Request $request) use($app) {
     $msg = '错误';

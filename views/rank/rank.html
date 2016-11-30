@@ -335,8 +335,7 @@
             isNetwork = true;
             $.ajax({
                 type: 'delete',
-                url: '/index.php/rank/list/clear',
-                data: {key: key},
+                url: '/index.php/rank/list/clear?key=' + key,
                 error: function() {
                     alert('网络错误');
                     isNetwork = false;
