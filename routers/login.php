@@ -19,8 +19,12 @@ $login->post('/in', function(Request $request) use($app) {
         'state' => 0,
         'msg' => '登录失败'
     );
+    $reg = '/^[A-Za-z0-9%]+$/';
     $user = $request->get('username');
     $pass = $request->get('password');
+    if (!preg_match($reg, $user) || !preg_match($reg, $pass)) {
+        return $app->json($res);
+    }
     $res = $app['db']->fetchAll("select * from ".Constant::DB_USER." where user = '$user' and password = '$pass' limit 1");
     if (count($res) > 0) {
         $app['session']->set('user', array('username' => $res[0]['name']));
